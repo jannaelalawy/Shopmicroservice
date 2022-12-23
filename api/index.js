@@ -7,6 +7,17 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+const checkAvailabilty = async (db) => {
+  db = await mongoClient();
+  if (!db) res.status(500).send("Systems Unavailable");
+
+  if (category.available - category.pending > 0) return true;
+  else return false;
+};
+function checkOutOfStock() {
+  //if equal zero yb2a out of stock
+}
+
 // GET ticket DONE
 app.get("/api/ticket/:id", async (req, res) => {
   const db = await mongoClient();
@@ -21,13 +32,7 @@ app.get("/api/allTickets", async (req, res) => {
   const db = await mongoClient();
   if (!db) res.status(500).send("Systems Unavailable");
 
-  const tickets = await db
-    .collection("Shop")
-    .find({})
-    .toArray(function (err, result) {
-      if (err) throw err;
-      console.log(result);
-    });
+  const tickets = await db.collection("Shop").find({}).toArray();
   res.status(200).send(tickets);
 });
 
@@ -68,64 +73,63 @@ app.post("api/masterlist", async (req, res) => {
   return res.send(masterObj);
 });
 
-//POST pending ticket
-app.patch("api/pending", async (req, res) => {
-  //match number wa
+//patch pending ticket DONE BAS LAZEM NE TEST
+app.patch("api/pendingTicket/:matchNumber", async (req, res) => {
   const db = await mongoClient();
   if (!db) res.status(500).send("Systems Unavailable");
-  //el wahed lazem yehgez men nafs el category
-  // lazem at2aked en available -pending yb2a more than zero
-  //if equal zero yb2a out of stock
-  var matchNo = { matchNumber: req.params.matchNumber };
-  if (
-    req.params["category1"] &&
-    checkAvailabilty(category, available, pending)
-  ) {
-    // var newvalues = { $set: { category1.available:req.params.category1.available } };
-  } else if (req.params["category2"])
-    var newvalues = { $set: { category2: "Mickey", address: "Canyon 123" } };
-  else if (req.params["category3"])
-    var newvalues = { $set: { category3: "Mickey", address: "Canyon 123" } };
 
-  db.collection("Shop").updateOne(matchNo, newvalues, function (err, res) {
+  const categoryType = req.params.availability;
+  try {
+    if (categoryType == "category1") {
+      db.collection("Shop").updateOne(
+        { matchNumber: req.params.matchNumber },
+        {
+          $set: {
+            availability: {
+              category1: {
+                pending: pending + req.params.pending,
+                available: available - req.params.pending,
+              },
+            },
+          },
+        }
+      );
+    } else if (categoryType == "category2") {
+      db.collection("Shop").updateOne(
+        { matchNumber: req.params.matchNumber },
+        {
+          $set: {
+            availability: {
+              category2: {
+                pending: pending + req.params.pending,
+                available: available - req.params.pending,
+              },
+            },
+          },
+        }
+      );
+    } else if (categoryType == "category3") {
+      db.collection("Shop").updateOne(
+        { matchNumber: req.params.matchNumber },
+        {
+          $set: {
+            availability: {
+              category3: {
+                pending: pending + req.params.pending,
+                available: available - req.params.pending,
+              },
+            },
+          },
+        }
+      );
+    }
+  } catch (err) {
     if (err) throw err;
-    console.log("1 document updated");
-  });
+  }
 });
 
-///PATCH PENDING
-app.patch("/update/pending/:id", async (req, res) => {
-  let db_connect = dbo.getDb();
-  let myquery = { _id: ObjectId(req.params.id) };
-
-  db_connect.tickets.updateOne({
-    $inc: {
-      pending: req.body.count,
-    },
-  });
-
-  //walla ke0daaa
-  db_connect.tickets.findOne();
-
-  let newvalues = {
-    $inc: {
-      //ayza lessa at2aked men elasma2 fel database
-      //count: -req.body.count,
-      ///ayzaa ahot condition henaa
-      pending_availability: req.body.count,
-      availability: req.body.count,
-    },
-  };
-  db_connect
-    .collection("tickets")
-    .updateOne(myquery, newvalues, function (err, res) {
-      if (err) throw err;
-      console.log("1 document updated");
-      response.json(res);
-    });
-});
-////PATCH RESERVE
-app.patch("/update/reserve/:id", async (req, res) => {
+//PATCH RESERVE
+app.patch("/api/reserve", async (req, res) => {
   let db_connect = dbo.getDb();
   let myquery = { _id: ObjectId(req.params.id) };
   ///ala hasab el3amaltaha foo2 a3melhaa henaa kamaan
@@ -144,7 +148,7 @@ app.patch("/update/reserve/:id", async (req, res) => {
       response.json(res);
     });
 });
-/////PATCH CANCELLATION
+//PATCH CANCELLED
 app.patch("/update/pending/:id", async (req, res) => {
   let db_connect = dbo.getDb();
   let myquery = { _id: ObjectId(req.params.id) };
