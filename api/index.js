@@ -13,7 +13,6 @@ app.get("/api/ticket/:id", async (req, res) => {
   if (!db) res.status(500).send("Systems Unavailable");
 
   let ticket = await db.collection("Shop").findOne({ id: req.params._id });
-  console.log(req.params.id);
   res.status(200).send(ticket);
 });
 
@@ -34,10 +33,8 @@ app.get("/api/allTickets", async (req, res) => {
 
 // POST MASTERLIST DONE BAS LAZEM NEGARABHA
 app.post("api/masterlist", async (req, res) => {
-  //continue coding hakhod men elshop consumer w ha add at database
   const db = await mongoClient();
   if (!db) res.status(500).send("Systems Unavailable");
-  // I have to post el masterlist fa hagebha men reservation sah?
 
   const masterObj = {
     matchNumber: req.body.matchNumber,
@@ -71,35 +68,29 @@ app.post("api/masterlist", async (req, res) => {
   return res.send(masterObj);
 });
 
-///POST ticket by id
-app.post("/api/newTicket", async (req, res) => {
+//POST pending ticket
+app.patch("api/pending", async (req, res) => {
+  //match number wa
   const db = await mongoClient();
   if (!db) res.status(500).send("Systems Unavailable");
+  //el wahed lazem yehgez men nafs el category
+  // lazem at2aked en available -pending yb2a more than zero
+  //if equal zero yb2a out of stock
+  var matchNo = { matchNumber: req.params.matchNumber };
+  if (
+    req.params["category1"] &&
+    checkAvailabilty(category, available, pending)
+  ) {
+    // var newvalues = { $set: { category1.available:req.params.category1.available } };
+  } else if (req.params["category2"])
+    var newvalues = { $set: { category2: "Mickey", address: "Canyon 123" } };
+  else if (req.params["category3"])
+    var newvalues = { $set: { category3: "Mickey", address: "Canyon 123" } };
 
-  const newTicket = {
-    name: req.body.name,
-    price: req.body.price,
-    quantity: 1,
-    ticket_id: uuid(),
-  };
-  await db.collection("Shop").insertOne(newTicket);
-
-  return res.send(newTicket);
-});
-
-//POST Pending ticket
-app.post("api/pending", async (req, res) => {
-  //continue coding hakhod men elshop consumer w ha add at database
-  const db = await mongoClient();
-  if (!db) res.status(500).send("Systems Unavailable");
-
-  const newTicket = {
-    name: req.body.name,
-    price: req.body.price,
-    quantity: 1,
-    ticket_id: uuid(),
-  };
-  await db.collection("Shop").insertOne(newTicket);
+  db.collection("Shop").updateOne(matchNo, newvalues, function (err, res) {
+    if (err) throw err;
+    console.log("1 document updated");
+  });
 });
 
 ///PATCH PENDING
