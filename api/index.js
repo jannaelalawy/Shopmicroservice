@@ -23,7 +23,7 @@ app.get("/api/ticket/:id", async (req, res) => {
   const db = await mongoClient();
   if (!db) res.status(500).send("Systems Unavailable");
 
-  let ticket = await db.collection("Shop").findOne({ id: req.params._id });
+  let ticket = await db.collection("Shop").findOne({ id: req.params.id });
   res.status(200).send(ticket);
 });
 
@@ -73,63 +73,73 @@ app.post("api/masterlist", async (req, res) => {
   return res.send(masterObj);
 });
 
-//patch pending ticket DONE BAS LAZEM NE TEST
-app.patch("api/pendingTicket/:matchNumber", async (req, res) => {
-  const db = await mongoClient();
-  if (!db) res.status(500).send("Systems Unavailable");
+// reserved decrement both
 
-  const categoryType = req.params.availability;
-  try {
-    if (categoryType == "category1") {
-      db.collection("Shop").updateOne(
-        { matchNumber: req.params.matchNumber },
-        {
-          $set: {
-            availability: {
-              category1: {
-                pending: pending + req.params.pending,
-                available: available - req.params.pending,
+//patch pending ticket DONE BAS LAZEM NE TEST
+app.patch(
+  "api/pendingTicket/:matchNumber/:categoryNo/:capacity",
+  async (req, res) => {
+    const db = await mongoClient();
+    if (!db) res.status(500).send("Systems Unavailable");
+    // pending increment pending
+
+    let matchNo = Number(req.params.matchNumber);
+    const categoryNo = Number(req.params.categoryNo);
+    try {
+      if (categoryNo == 1) {
+        db.collection("Shop").updateOne(
+          {
+            matchNumber: matchNo,
+          },
+          {
+            $inc: {
+              availability: {
+                category1: {
+                  pending: Number(req.params.capacity),
+                },
               },
             },
-          },
-        }
-      );
-    } else if (categoryType == "category2") {
-      db.collection("Shop").updateOne(
-        { matchNumber: req.params.matchNumber },
-        {
-          $set: {
-            availability: {
-              category2: {
-                pending: pending + req.params.pending,
-                available: available - req.params.pending,
-              },
-            },
-          },
-        }
-      );
-    } else if (categoryType == "category3") {
-      db.collection("Shop").updateOne(
-        { matchNumber: req.params.matchNumber },
-        {
-          $set: {
-            availability: {
-              category3: {
-                pending: pending + req.params.pending,
-                available: available - req.params.pending,
-              },
-            },
-          },
-        }
-      );
+          }
+        );
+      }
+      // else if (categoryNo == 2) {
+      //   db.collection("Shop").updateOne(
+      //     { matchNumber: req.params.matchNumber },
+      //     {
+      //       $inc: {
+      //         availability: {
+      //           category2: {
+      //             pending: req.params.pending,
+      //           },
+      //         },
+      //       },
+      //     }
+      //   );
+      // } else if (categoryNo == 3) {
+      //   db.collection("Shop").updateOne(
+      //     { matchNumber: req.params.matchNumber },
+      //     {
+      //       $inc: {
+      //         availability: {
+      //           category3: {
+      //             pending: req.params.pending,
+      //           },
+      //         },
+      //       },
+      //     }
+      //   );
+      // }
+    } catch (err) {
+      if (err) throw err;
+      console.log("error");
     }
-  } catch (err) {
-    if (err) throw err;
+    res.send(200);
   }
-});
+);
 
 //PATCH RESERVE
 app.patch("/api/reserve", async (req, res) => {
+  let dec = Number(req.params.capacity) * -1;
   let db_connect = dbo.getDb();
   let myquery = { _id: ObjectId(req.params.id) };
   ///ala hasab el3amaltaha foo2 a3melhaa henaa kamaan
@@ -159,6 +169,7 @@ app.patch("/update/pending/:id", async (req, res) => {
       pending: -req.body.count,
     },
   };
+  ins;
   db_connect
     .collection("tickets")
     .updateOne(myquery, newvalues, function (err, res) {
