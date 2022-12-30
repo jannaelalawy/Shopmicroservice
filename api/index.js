@@ -7,6 +7,36 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+// available > pending + el quantity
+async function checkpendingAvailable(matchNo, category, quantity) {
+  const db = await mongoClient();
+  if (!db) res.status(500).send("Systems Unavailable");
+  const match = await db.collection("Shop").findOne({
+    MatchNumber: matchNo,
+  });
+  if (
+    category == 1 &&
+    match.availability.category1.available >
+      match.availability.category1.available + quantity
+  )
+    return true;
+  else if (
+    category == 2 &&
+    match.availability.category2.available >
+      match.availability.category2.available + quantity
+  )
+    return true;
+  else if (
+    category == 3 &&
+    match.availability.category3.available >
+      match.availability.category3.available + quantity
+  )
+    return true;
+  else {
+    return false;
+  }
+}
+
 async function checkOutOfStock(matchNo, category) {
   const db = await mongoClient();
   if (!db) res.status(500).send("Systems Unavailable");
@@ -101,6 +131,11 @@ app.patch(
       checkOutOfStock(
         Number(req.params.matchNumber),
         Number(req.params.categoryNo)
+      ) &&
+      checkpendingAvailable(
+        Number(req.params.matchNumber),
+        Number(req.params.categoryNo),
+        Number(req.params.pending)
       )
     )
       res.send("TICKET OUT OF STOCK");
