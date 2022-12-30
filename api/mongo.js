@@ -1,11 +1,11 @@
-const { MongoClient } = require('mongodb');
-const util = require('util');
+const { MongoClient } = require("mongodb");
+const util = require("util");
 
 util.promisify(MongoClient.connect);
 
 const { MONGO_URI, MONGO_DB_NAME } = process.env;
-console.log('MONGO_URI :>> ', MONGO_URI);
-console.log('MONGO_DB_NAME :>> ', MONGO_DB_NAME);
+console.log("MONGO_URI :>> ", MONGO_URI);
+console.log("MONGO_DB_NAME :>> ", MONGO_DB_NAME);
 let dbConnection;
 
 const connect = async () => {

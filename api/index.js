@@ -7,13 +7,6 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-const checkAvailabilty = async (db) => {
-  db = await mongoClient();
-  if (!db) res.status(500).send("Systems Unavailable");
-
-  if (category.available - category.pending > 0) return true;
-  else return false;
-};
 function checkOutOfStock() {
   //if equal zero yb2a out of stock
 }
@@ -73,111 +66,162 @@ app.post("api/masterlist", async (req, res) => {
   return res.send(masterObj);
 });
 
-// reserved decrement both
+//test
+app.get("/api/test/:MatchNumber", async (req, res) => {
+  const db = await mongoClient();
+  if (!db) res.status(500).send("Systems Unavailable");
 
-//patch pending ticket DONE BAS LAZEM NE TEST
+  const test = await db.collection("Shop").findOne({
+    MatchNumber: Number(req.params.MatchNumber),
+  });
+  console.log(test);
+  res.status(200).send(test);
+});
+
+//patch pending ticket DONE
 app.patch(
-  "api/pendingTicket/:matchNumber/:categoryNo/:capacity",
+  "/pendingTicket/:matchNumber/:categoryNo/:pending",
   async (req, res) => {
     const db = await mongoClient();
     if (!db) res.status(500).send("Systems Unavailable");
     // pending increment pending
 
-    let matchNo = Number(req.params.matchNumber);
-    const categoryNo = Number(req.params.categoryNo);
-    try {
-      if (categoryNo == 1) {
-        db.collection("Shop").updateOne(
-          {
-            matchNumber: matchNo,
-          },
-          {
-            $inc: {
-              availability: {
-                category1: {
-                  pending: Number(req.params.capacity),
-                },
-              },
-            },
-          }
-        );
-      }
-      // else if (categoryNo == 2) {
-      //   db.collection("Shop").updateOne(
-      //     { matchNumber: req.params.matchNumber },
-      //     {
-      //       $inc: {
-      //         availability: {
-      //           category2: {
-      //             pending: req.params.pending,
-      //           },
-      //         },
-      //       },
-      //     }
-      //   );
-      // } else if (categoryNo == 3) {
-      //   db.collection("Shop").updateOne(
-      //     { matchNumber: req.params.matchNumber },
-      //     {
-      //       $inc: {
-      //         availability: {
-      //           category3: {
-      //             pending: req.params.pending,
-      //           },
-      //         },
-      //       },
-      //     }
-      //   );
-      // }
-    } catch (err) {
-      if (err) throw err;
-      console.log("error");
+    if (Number(req.params.categoryNo) == 1) {
+      let query = { MatchNumber: Number(req.params.matchNumber) };
+      let newVal = {
+        $inc: {
+          "availability.category1.pending": Number(req.params.pending),
+        },
+      };
+      db.collection("Shop").updateOne(query, newVal, function (err, res) {
+        if (err) throw err;
+        console.log("1 document updated");
+      });
+    } else if (Number(req.params.categoryNo) == 2) {
+      let query = { MatchNumber: Number(req.params.matchNumber) };
+      let newVal = {
+        $inc: {
+          "availability.category2.pending": Number(req.params.pending),
+        },
+      };
+      db.collection("Shop").updateOne(query, newVal, function (err, res) {
+        if (err) throw err;
+        console.log("1 document updated");
+      });
+    } else if (Number(req.params.categoryNo) == 3) {
+      let query = { MatchNumber: Number(req.params.matchNumber) };
+      let newVal = {
+        $inc: {
+          "availability.category3.pending": Number(req.params.pending),
+        },
+      };
+      db.collection("Shop").updateOne(query, newVal, function (err, res) {
+        if (err) throw err;
+        console.log("1 document updated");
+      });
     }
-    res.send(200);
   }
 );
 
-//PATCH RESERVE
-app.patch("/api/reserve", async (req, res) => {
-  let dec = Number(req.params.capacity) * -1;
-  let db_connect = dbo.getDb();
-  let myquery = { _id: ObjectId(req.params.id) };
-  ///ala hasab el3amaltaha foo2 a3melhaa henaa kamaan
-  let newvalues = {
-    $inc: {
-      count: -req.body.count,
-      //pending: -req.body.count,
-      //availability: -req.body.count,    },
-    },
-  };
-  db_connect
-    .collection("tickets")
-    .updateOne(myquery, newvalues, function (err, res) {
-      if (err) throw err;
-      console.log("1 document updated");
-      response.json(res);
-    });
-});
+//PATCH RESERVE DONE
+app.patch(
+  "/reservedTicket/:matchNumber/:categoryNo/:availability/:pending",
+  async (req, res) => {
+    const db = await mongoClient();
+    if (!db) res.status(500).send("Systems Unavailable");
+
+    if (Number(req.params.categoryNo) == 1) {
+      let decAvailability = Number(req.params.availability);
+      let decPending = Number(req.params.pending);
+      let query = { MatchNumber: Number(req.params.matchNumber) };
+      let newVal = {
+        $inc: {
+          "availability.category1.pending": -decPending,
+          "availability.category1.available": -decAvailability,
+        },
+      };
+      db.collection("Shop").updateOne(query, newVal, function (err, res) {
+        if (err) throw err;
+        console.log("1 document updated");
+      });
+    } else if (Number(req.params.categoryNo) == 2) {
+      let decAvailability = Number(req.params.availability);
+      let decPending = Number(req.params.pending);
+      let query = { MatchNumber: Number(req.params.matchNumber) };
+      let newVal = {
+        $inc: {
+          "availability.category2.pending": -decPending,
+          "availability.category2.available": -decAvailability,
+        },
+      };
+      db.collection("Shop").updateOne(query, newVal, function (err, res) {
+        if (err) throw err;
+        console.log("1 document updated");
+      });
+    } else if (Number(req.params.categoryNo) == 3) {
+      let decAvailability = Number(req.params.availability);
+      let decPending = Number(req.params.pending);
+      let query = { MatchNumber: Number(req.params.matchNumber) };
+      let newVal = {
+        $inc: {
+          "availability.category3.pending": -decPending,
+          "availability.category3.available": -decAvailability,
+        },
+      };
+      db.collection("Shop").updateOne(query, newVal, function (err, res) {
+        if (err) throw err;
+        console.log("1 document updated");
+      });
+    }
+  }
+);
+
 //PATCH CANCELLED
-app.patch("/update/pending/:id", async (req, res) => {
-  let db_connect = dbo.getDb();
-  let myquery = { _id: ObjectId(req.params.id) };
-  //mafroud yeb2a based 3al match id fa search how hat-acces el matchid dah3shan te2alili fih el category el gayalik el count w tezawedy el pending:
-  let newvalues = {
-    $inc: {
-      //count: -req.body.count,
-      pending: -req.body.count,
-    },
-  };
-  ins;
-  db_connect
-    .collection("tickets")
-    .updateOne(myquery, newvalues, function (err, res) {
-      if (err) throw err;
-      console.log("1 document updated");
-      response.json(res);
-    });
-});
+app.patch(
+  "/cancelledTicket/:matchNumber/:categoryNo/:pending",
+  async (req, res) => {
+    const db = await mongoClient();
+    if (!db) res.status(500).send("Systems Unavailable");
+
+    if (Number(req.params.categoryNo) == 1) {
+      let decPending = Number(req.params.pending);
+      let query = { MatchNumber: Number(req.params.matchNumber) };
+      let newVal = {
+        $inc: {
+          "availability.category1.pending": -decPending,
+        },
+      };
+      db.collection("Shop").updateOne(query, newVal, function (err, res) {
+        if (err) throw err;
+        console.log("1 document updated");
+      });
+    } else if (Number(req.params.categoryNo) == 2) {
+      let decPending = Number(req.params.pending);
+      let query = { MatchNumber: Number(req.params.matchNumber) };
+      let newVal = {
+        $inc: {
+          "availability.category2.pending": -decPending,
+        },
+      };
+      db.collection("Shop").updateOne(query, newVal, function (err, res) {
+        if (err) throw err;
+        console.log("1 document updated");
+      });
+    } else if (Number(req.params.categoryNo) == 3) {
+      let decPending = Number(req.params.pending);
+      let query = { MatchNumber: Number(req.params.matchNumber) };
+      let newVal = {
+        $inc: {
+          "availability.category3.pending": -decPending,
+        },
+      };
+      db.collection("Shop").updateOne(query, newVal, function (err, res) {
+        if (err) throw err;
+        console.log("1 document updated");
+      });
+    }
+  }
+);
 
 app.listen(port, () => {
   console.log(`App listening on port ${port}`);
