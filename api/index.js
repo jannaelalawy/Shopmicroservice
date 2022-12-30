@@ -2,10 +2,9 @@ require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const { mongoClient } = require("./mongo");
-const { response } = require("express");
 const port = 3000;
 const app = express();
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 // available > pending + el quantity
@@ -56,40 +55,42 @@ app.get("/api/allTickets", async (req, res) => {
 });
 
 // POST MASTERLIST DONE BAS LAZEM NEGARABHA
-app.post("api/masterlist", async (req, res) => {
+app.post("/api/masterlist", async (req, res) => {
   const db = await mongoClient();
   if (!db) res.status(500).send("Systems Unavailable");
-
+  //console.log(req.body.availability.category1.available)
   const masterObj = {
-    matchNumber: req.body.matchNumber,
-    roundNumber: req.body.roundNumber,
+    matchNumber: req.body.MatchNumber,
+    roundNumber: req.body.RoundNumber,
     dateUtc: req.body.dateUtc,
     location: req.body.location,
     availability: {
       category1: {
-        available: req.body.availability.available,
-        pending: req.body.availability.pending,
-        price: req.body.availability.price,
+        available: req.body.availability.category1.available,
+        pending: req.body.availability.category1.pending,
+        price: req.body.availability.category1.price,
       },
       category2: {
-        available: req.body.availability.available,
-        pending: req.body.availability.pending,
-        price: req.body.availability.price,
+        available: req.body.availability.category2.available,
+        pending: req.body.availability.category2.pending,
+        price: req.body.availability.category2.price,
       },
       category3: {
-        available: req.body.availability.available,
-        pending: req.body.availability.pending,
-        price: req.body.availability.price,
+        available: req.body.availability.category3.available,
+        pending: req.body.availability.category3.pending,
+        price: req.body.availability.category3.price,
       },
     },
     homeTeam: req.body.homeTeam,
     awayTeam: req.body.awayTeam,
     group: req.body.group,
   };
-
   await db.collection("Shop").insertOne(masterObj);
-
   return res.send(masterObj);
+  // db.collection("Shop").insertOne(masterObj,function(err,res){
+  // if (err)throw err;
+  // // response.json(masterObj)
+  // return res.send(masterObj);})
 });
 
 //test
@@ -218,7 +219,7 @@ app.patch(
 //PATCH CANCELLED
 app.patch(
   "/cancelledTicket/:matchNumber/:categoryNo/:pending",
-  async (req, res) => {
+  async (req, response) => {
     const db = await mongoClient();
     if (!db) res.status(500).send("Systems Unavailable");
 
@@ -233,6 +234,7 @@ app.patch(
       db.collection("Shop").updateOne(query, newVal, function (err, res) {
         if (err) throw err;
         console.log("1 document updated");
+        response.json(res);
       });
     } else if (Number(req.params.categoryNo) == 2) {
       let decPending = Number(req.params.pending);
@@ -245,6 +247,7 @@ app.patch(
       db.collection("Shop").updateOne(query, newVal, function (err, res) {
         if (err) throw err;
         console.log("1 document updated");
+        response.json(res);
       });
     } else if (Number(req.params.categoryNo) == 3) {
       let decPending = Number(req.params.pending);
@@ -257,6 +260,7 @@ app.patch(
       db.collection("Shop").updateOne(query, newVal, function (err, res) {
         if (err) throw err;
         console.log("1 document updated");
+        response.json(res);
       });
     }
   }
