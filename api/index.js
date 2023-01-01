@@ -108,7 +108,7 @@ app.get("/api/test/:MatchNumber", async (req, res) => {
 
 //patch pending ticket DONE
 app.patch(
-  "/pendingTicket/:matchNumber/:categoryNo/:pending",
+  "api/pendingTicket/:matchNumber/:categoryNo/:pending",
   async (req, response) => {
     const db = await mongoClient();
     if (!db) res.status(500).send("Systems Unavailable");
@@ -162,7 +162,7 @@ app.patch(
 
 //PATCH RESERVE DONE
 app.patch(
-  "/reservedTicket/:matchNumber/:categoryNo/:availability/:pending",
+  "api/reservedTicket/:matchNumber/:categoryNo/:availability/:pending",
   async (req, response) => {
     const db = await mongoClient();
     if (!db) res.status(500).send("Systems Unavailable");
@@ -218,7 +218,7 @@ app.patch(
 
 //PATCH CANCELLED
 app.patch(
-  "/cancelledTicket/:matchNumber/:categoryNo/:pending",
+  "api/cancelledTicket/:matchNumber/:categoryNo/:pending",
   async (req, response) => {
     const db = await mongoClient();
     if (!db) res.status(500).send("Systems Unavailable");
