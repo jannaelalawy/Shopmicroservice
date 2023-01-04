@@ -68,6 +68,7 @@ app.get("/api/allTickets", async (req, res) => {
 
 // POST MASTERLIST DONE BAS LAZEM NEGARABHA
 app.post("/api/masterlist", async (req, res) => {
+  try{
   const db = await mongoClient();
   if (!db) res.status(500).send("Systems Unavailable");
   //console.log(req.body.availability.category1.available)
@@ -98,11 +99,13 @@ app.post("/api/masterlist", async (req, res) => {
     group: req.body.group,
   };
   await db.collection("Shop").insertOne(masterObj);
-  return res.send(masterObj);
-  // db.collection("Shop").insertOne(masterObj,function(err,res){
-  // if (err)throw err;
-  // // response.json(masterObj)
-  // return res.send(masterObj);})
+    return res.send(masterObj);
+
+}
+
+  catch(e){
+    return res.status(400).send(e.message);
+  }
 });
 
 //test
