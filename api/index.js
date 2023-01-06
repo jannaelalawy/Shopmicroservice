@@ -73,8 +73,8 @@ app.post("/api/masterlist", async (req, res) => {
     if (!db) res.status(500).send("Systems Unavailable");
     //console.log(req.body.availability.category1.available)
     const masterObj = {
-      matchNumber: req.body.MatchNumber,
-      roundNumber: req.body.RoundNumber,
+      matchNumber: req.body.matchNumber,
+      roundNumber: req.body.roundNumber,
       dateUtc: req.body.dateUtc,
       location: req.body.location,
       availability: {
