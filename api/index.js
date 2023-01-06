@@ -171,40 +171,53 @@ app.patch(
 
 //PATCH RESERVE DONE
 app.patch(
-  "/api/reservedTicket/:matchNumber/:categoryNo/:availability/:pending",
+  "/api/reservedTicket/:matchNumber/:categoryNo/:pending",
   async (req, response) => {
     const db = await mongoClient();
     if (!db) res.status(500).send("Systems Unavailable");
+    const match = await db.collection("Shop").findOne({
+      matchNumber: Number(req.params.matchNumber),
+    });
     let query;
     let newVal;
     if (Number(req.params.categoryNo) == 1) {
-      let decAvailability = Number(req.params.availability) * -1;
-      let decPending = Number(req.params.pending) * -1;
+      let avail = match.availability.category1.available;
+      let decAvailability = avail - Number(req.params.pending);
+      let decPending = Number(req.params.pending);
+
+      match.availability.category1.available = decAvailability;
+      match.availability.category1.pending = decPending;
       query = { matchNumber: Number(req.params.matchNumber) };
       newVal = {
         $inc: {
-          "availability.category1.pending": decPending,
-          "availability.category1.available": decAvailability,
+          "availability.category1.pending": -decPending,
+          "availability.category1.available": -decPending,
         },
       };
     } else if (Number(req.params.categoryNo) == 2) {
-      let decAvailability = Number(req.params.availability) * -1;
-      let decPending = Number(req.params.pending) * -1;
+      let avail = match.availability.category2.available;
+      let decAvailability = avail - Number(req.params.pending);
+      let decPending = Number(req.params.pending);
+      match.availability.category2.available = decAvailability;
+      match.availability.category2.pending = decPending;
       query = { matchNumber: Number(req.params.matchNumber) };
       newVal = {
         $inc: {
-          "availability.category2.pending": decPending,
-          "availability.category2.available": decAvailability,
+          "availability.category2.pending": -decPending,
+          "availability.category2.available": -decPending,
         },
       };
     } else if (Number(req.params.categoryNo) == 3) {
-      let decAvailability = Number(req.params.availability) * -1;
-      let decPending = Number(req.params.pending) * -1;
+      let avail = match.availability.category3.available;
+      let decAvailability = avail - Number(req.params.pending);
+      let decPending = Number(req.params.pending);
+      match.availability.category3.available = decAvailability;
+      match.availability.category3.pending = decPending;
       query = { matchNumber: Number(req.params.matchNumber) };
       newVal = {
         $inc: {
-          "availability.category3.pending": decPending,
-          "availability.category3.available": decAvailability,
+          "availability.category3.pending": -decPending,
+          "availability.category3.available": -decPending,
         },
       };
     }
