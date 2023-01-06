@@ -24,7 +24,7 @@ async function isPendingAvailable(matchNo, category, quantity) {
   const db = await mongoClient();
   if (!db) res.status(500).send("Systems Unavailable");
   const match = await db.collection("Shop").findOne({
-    MatchNumber: matchNo,
+    matchNumber: matchNo,
   });
 
   if (
@@ -106,12 +106,12 @@ app.post("/api/masterlist", async (req, res) => {
 });
 
 //test
-app.get("/api/test/:MatchNumber", async (req, res) => {
+app.get("/api/test/:matchNumber", async (req, res) => {
   const db = await mongoClient();
   if (!db) res.status(500).send("Systems Unavailable");
 
   const test = await db.collection("Shop").findOne({
-    MatchNumber: Number(req.params.MatchNumber),
+    matchNumber: Number(req.params.matchNumber),
   });
   // console.log(test.availability.category1);
 
@@ -134,21 +134,21 @@ app.patch(
       )
     ) {
       if (Number(req.params.categoryNo) == 1) {
-        query = { MatchNumber: Number(req.params.matchNumber) };
+        query = { matchNumber: Number(req.params.matchNumber) };
         newVal = {
           $inc: {
             "availability.category1.pending": Number(req.params.pending),
           },
         };
       } else if (Number(req.params.categoryNo) == 2) {
-        query = { MatchNumber: Number(req.params.matchNumber) };
+        query = { matchNumber: Number(req.params.matchNumber) };
         newVal = {
           $inc: {
             "availability.category2.pending": Number(req.params.pending),
           },
         };
       } else if (Number(req.params.categoryNo) == 3) {
-        query = { MatchNumber: Number(req.params.matchNumber) };
+        query = { matchNumber: Number(req.params.matchNumber) };
         newVal = {
           $inc: {
             "availability.category3.pending": Number(req.params.pending),
@@ -180,7 +180,7 @@ app.patch(
     if (Number(req.params.categoryNo) == 1) {
       let decAvailability = Number(req.params.availability) * -1;
       let decPending = Number(req.params.pending) * -1;
-      query = { MatchNumber: Number(req.params.matchNumber) };
+      query = { matchNumber: Number(req.params.matchNumber) };
       newVal = {
         $inc: {
           "availability.category1.pending": decPending,
@@ -190,7 +190,7 @@ app.patch(
     } else if (Number(req.params.categoryNo) == 2) {
       let decAvailability = Number(req.params.availability) * -1;
       let decPending = Number(req.params.pending) * -1;
-      query = { MatchNumber: Number(req.params.matchNumber) };
+      query = { matchNumber: Number(req.params.matchNumber) };
       newVal = {
         $inc: {
           "availability.category2.pending": decPending,
@@ -200,7 +200,7 @@ app.patch(
     } else if (Number(req.params.categoryNo) == 3) {
       let decAvailability = Number(req.params.availability) * -1;
       let decPending = Number(req.params.pending) * -1;
-      query = { MatchNumber: Number(req.params.matchNumber) };
+      query = { matchNumber: Number(req.params.matchNumber) };
       newVal = {
         $inc: {
           "availability.category3.pending": decPending,
@@ -226,7 +226,7 @@ app.patch(
     let newVal;
     if (Number(req.params.categoryNo) == 1) {
       let decPending = Number(req.params.pending);
-      query = { MatchNumber: Number(req.params.matchNumber) };
+      query = { matchNumber: Number(req.params.matchNumber) };
       newVal = {
         $inc: {
           "availability.category1.pending": -decPending,
@@ -234,7 +234,7 @@ app.patch(
       };
     } else if (Number(req.params.categoryNo) == 2) {
       let decPending = Number(req.params.pending);
-      query = { MatchNumber: Number(req.params.matchNumber) };
+      query = { matchNumber: Number(req.params.matchNumber) };
       newVal = {
         $inc: {
           "availability.category2.pending": -decPending,
@@ -242,7 +242,7 @@ app.patch(
       };
     } else if (Number(req.params.categoryNo) == 3) {
       let decPending = Number(req.params.pending);
-      query = { MatchNumber: Number(req.params.matchNumber) };
+      query = { matchNumber: Number(req.params.matchNumber) };
       newVal = {
         $inc: {
           "availability.category3.pending": -decPending,
