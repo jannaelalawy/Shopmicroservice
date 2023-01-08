@@ -99,7 +99,7 @@ app.post("/api/masterlist", async (req, res) => {
       group: req.body.group,
     };
     await db.collection("Shop").insertOne(masterObj);
-    return res.send(masterObj);
+    return res.status(200).send(masterObj);
   } catch (e) {
     return res.status(400).send(e.message);
   }
